@@ -15,18 +15,38 @@
             color: #ffffff;
             scroll-behavior: smooth;
         }
+        /* Параллакс-эффект */
+        .parallax {
+            position: relative;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-        /* Обложка */
-        .cover {
+        .parallax::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-image: url('https://img3.akspic.ru/crops/5/4/7/2/5/152745/152745-dizajn-graficeskij_dizajn-sinij-krasochnost-purpur-3840x2160.jpg');
             background-size: cover;
             background-position: center;
+            z-index: -1;
+            transform: translateZ(-1px) scale(2); /* Параллакс-эффект */
+        }
+
+
+        /* Обложка */
+        .cover {
             height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
+            position: relative;
+            z-index: 1;
         }
 
         .cover h1 {
@@ -162,11 +182,12 @@
     </style>
 </head>
 <body>
+    <div class="parallax">
     <!-- Обложка на весь экран -->
-    <div class="cover">
-        <h1>БАЛЛЫ УЧЕНИКОВ</h1>
-        <button onclick="scrollToTable()">УЗНАЙ СВОЙ БАЛЛ</button>
-    </div>
+        <div class="cover">
+            <h1>БАЛЛЫ УЧЕНИКОВ</h1>
+            <button onclick="scrollToTable()">УЗНАЙ СВОЙ БАЛЛ</button>
+        </div>
 
     <!-- Фильтры по времени -->
     <div class="time-filters">
@@ -192,7 +213,7 @@
         <span>800</span>
         <span>1000</span>
     </div>
-
+</div>
     <!-- Контейнер для учеников -->
     <div id="students"></div>
 
