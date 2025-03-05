@@ -112,10 +112,11 @@
 
         .emoji {
             position: absolute;
-            right: -20px;
+            right: -25px; /* Сдвигаем эмодзи вправо */
             top: 50%;
             transform: translateY(-50%);
-            font-size: 20px;
+            font-size: 24px; /* Увеличиваем размер эмодзи */
+            z-index: 2; /* Выводим эмодзи на передний план */
         }
 
         .student-name {
@@ -135,6 +136,29 @@
             font-size: 14px;
             padding: 0 10px;
         }
+
+        /* Фильтры по времени */
+        .time-filters {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px;
+        }
+
+        .time-filters button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #9400d3;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .time-filters button:hover {
+            background-color: #7a00b3;
+        }
     </style>
 </head>
 <body>
@@ -142,6 +166,13 @@
     <div class="cover">
         <h1>БАЛЛЫ УЧЕНИКОВ</h1>
         <button onclick="scrollToTable()">УЗНАЙ СВОЙ БАЛЛ</button>
+    </div>
+
+    <!-- Фильтры по времени -->
+    <div class="time-filters">
+        <button onclick="filterByPeriod('day')">День</button>
+        <button onclick="filterByPeriod('week')">Неделя</button>
+        <button onclick="filterByPeriod('month')">Месяц</button>
     </div>
 
     <!-- Фильтры -->
@@ -235,6 +266,41 @@
                 barContainer.appendChild(bar);
                 container.appendChild(barContainer);
             });
+        }
+
+        // Фильтрация по периоду (день, неделя, месяц)
+        function filterByPeriod(period) {
+            const today = new Date();
+            let filteredData;
+
+            switch (period) {
+                case 'day':
+                    filteredData = studentsData.filter(student => {
+                        const studentDate = new Date(student.date);
+                        return studentDate.toDateString() === today.toDateString();
+                    });
+                    break;
+                case 'week':
+                    const startOfWeek = new Date(today);
+                    startOfWeek.setDate(today.getDate() - today.getDay());
+                    filteredData = studentsData.filter(student => {
+                        const studentDate = new Date(student.date);
+                        return studentDate >= startOfWeek && studentDate <= today;
+                    });
+                    break;
+                case 'month':
+                    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                    filteredData = studentsData.filter(student => {
+                        const studentDate = new Date(student.date);
+                        return studentDate >= startOfMonth && studentDate <= today;
+                    });
+                    break;
+                default:
+                    filteredData = studentsData;
+            }
+
+            const selectedGroup = document.getElementById('groupFilter').value;
+            displayData(filteredData, selectedGroup);
         }
 
         // Сортировка по баллам
