@@ -196,7 +196,7 @@
         let studentsData = [];
 
         async function fetchData() {
-            const response = await fetch('https://script.google.com/macros/s/AKfycbz2q_08--Sx_TC0tuKQ_3YxSBSqezEX7LBfOQ_S6XfBXjidXlvj1suxcqnzIN1xo4ce/exec');
+            const response = await fetch('https://script.google.com/macros/s/AKfycbzKpFEFR47aTJEZTW0vbelAEm_p60Iu6AHN7GGGmuieI0naoBIdJuQfkSAjme6NZZjM/exec');
             const data = await response.json();
             studentsData = data;
             populateGroupFilter(data);
