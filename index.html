@@ -107,6 +107,15 @@
             line-height: 30px;
             transition: width 0.5s ease;
             box-shadow: 0 0 10px rgba(0,255,0,0.3);
+            position: relative;
+        }
+
+        .emoji {
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
         }
 
         .student-name {
@@ -175,6 +184,16 @@
             });
         }
 
+        // Получаем эмодзи в зависимости от баллов
+        function getEmoji(points) {
+            if (points >= 0 && points < 200) return '👍'; // Лайк
+            if (points >= 200 && points < 400) return '😊'; // Улыбка
+            if (points >= 400 && points < 600) return '⭐'; // Звездочка
+            if (points >= 600 && points < 800) return '🚀'; // Ракета
+            if (points >= 800 && points <= 1000) return '🔥'; // Огонь
+            return '';
+        }
+
         // Отображаем данные
         function displayData(data, group) {
             const container = document.getElementById('students');
@@ -201,6 +220,12 @@
                 bar.className = 'bar';
                 bar.style.width = `${Math.min((student.points / 1000) * 100, 100)}%`;
                 bar.textContent = `${student.points} БАЛЛОВ`;
+
+                // Добавляем эмодзи
+                const emoji = document.createElement('span');
+                emoji.className = 'emoji';
+                emoji.textContent = getEmoji(student.points);
+                bar.appendChild(emoji);
 
                 const nameSpan = document.createElement('span');
                 nameSpan.className = 'student-name';
