@@ -15,6 +15,7 @@
             color: #ffffff;
             scroll-behavior: smooth;
         }
+
         /* Параллакс-эффект */
         .parallax {
             position: relative;
@@ -36,8 +37,7 @@
             transform: translateZ(-1px) scale(2); /* Параллакс-эффект */
         }
 
-
-        /* Обложка */
+        /* Обложка на весь экран */
         .cover {
             height: 100vh;
             display: flex;
@@ -72,6 +72,14 @@
         .cover button:hover {
             background-color: #7a00b3;
             transform: scale(1.05);
+        }
+
+        /* Основной контент */
+        .content {
+            position: relative;
+            z-index: 2;
+            background-color: #1a1a1a;
+            padding: 20px;
         }
 
         /* Фильтры */
@@ -132,10 +140,10 @@
 
         .emoji {
             position: absolute;
-            right: -35px; 
+            right: -25px;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 24px; 
+            font-size: 24px;
             z-index: 2;
         }
 
@@ -182,40 +190,41 @@
     </style>
 </head>
 <body>
+    <!-- Параллакс-эффект -->
     <div class="parallax">
-    <!-- Обложка на весь экран -->
+        <!-- Обложка на весь экран -->
         <div class="cover">
             <h1>БАЛЛЫ УЧЕНИКОВ</h1>
             <button onclick="scrollToTable()">УЗНАЙ СВОЙ БАЛЛ</button>
         </div>
-
-    <!-- Фильтры по времени -->
-    <div class="time-filters">
-        <button onclick="filterByPeriod('day')">День</button>
-        <button onclick="filterByPeriod('week')">Неделя</button>
-        <button onclick="filterByPeriod('month')">Месяц</button>
     </div>
 
-    <!-- Фильтры -->
-    <div class="filters">
-        <select id="groupFilter">
-            <option value="all">ВСЕ ГРУППЫ</option>
-        </select>
-        <button onclick="sortByPoints()">СОРТИРОВАТЬ ПО БАЛЛАМ</button>
-    </div>
+    <!-- Основной контент -->
+    <div class="content">
+        <!-- Фильтры по времени -->
+        <div class="time-filters">
+            <button onclick="filterByPeriod('day')">День</button>
+            <button onclick="filterByPeriod('week')">Неделя</button>
+            <button onclick="filterByPeriod('month')">Месяц</button>
+        </div>
 
-    <!-- Шкала баллов -->
-    <div class="points-scale">
-        <span>0</span>
-        <span>200</span>
-        <span>400</span>
-        <span>600</span>
-        <span>800</span>
-        <span>1000</span>
+        <!-- Фильтры -->
+        <div class="filters">
+            <select id="groupFilter">
+                <option value="all">ВСЕ ГРУППЫ</option>
+            </select>
+            <button onclick="sortByPoints()">СОРТИРОВАТЬ ПО БАЛЛАМ</button>
+        </div>
+
+        <!-- Шкала баллов -->
+        <div class="points-scale">
+            <span>0</span>
+            <span>1000</span>
+        </div>
+
+        <!-- Контейнер для учеников -->
+        <div id="students"></div>
     </div>
-</div>
-    <!-- Контейнер для учеников -->
-    <div id="students"></div>
 
     <script>
         let studentsData = [];
@@ -228,6 +237,7 @@
             displayData(data, 'all'); // По умолчанию показываем все группы
         }
 
+        // Заполняем фильтр группами
         function populateGroupFilter(data) {
             const groupFilter = document.getElementById('groupFilter');
             const groups = [...new Set(data.map(student => student.group))];
@@ -239,16 +249,17 @@
             });
         }
 
+        // Получаем эмодзи в зависимости от баллов
         function getEmoji(points) {
-            if (points >= 0 && points < 200) return '👍'; 
-            if (points >= 200 && points < 400) return '😊'; 
-            if (points >= 400 && points < 600) return '⭐'; 
-            if (points >= 600 && points < 800) return '🚀'; 
-            if (points >= 800 && points <= 1000) return '🔥'; 
+            if (points >= 0 && points < 200) return '👍'; // Лайк
+            if (points >= 200 && points < 400) return '😊'; // Улыбка
+            if (points >= 400 && points < 600) return '⭐'; // Звездочка
+            if (points >= 600 && points < 800) return '🚀'; // Ракета
+            if (points >= 800 && points <= 1000) return '🔥'; // Огонь
             return '';
         }
 
-
+        // Отображаем данные
         function displayData(data, group) {
             const container = document.getElementById('students');
             container.innerHTML = '';
@@ -262,10 +273,10 @@
                 filteredData = data.filter(student => student.group == group);
             }
 
-
+            // Сортируем данные по баллам
             filteredData.sort((a, b) => b.points - a.points);
 
-
+            // Отображаем учеников
             filteredData.forEach(student => {
                 const barContainer = document.createElement('div');
                 barContainer.className = 'bar-container';
@@ -275,7 +286,7 @@
                 bar.style.width = `${Math.min((student.points / 1000) * 100, 100)}%`;
                 bar.textContent = `${student.points} БАЛЛОВ`;
 
-      
+                // Добавляем эмодзи
                 const emoji = document.createElement('span');
                 emoji.className = 'emoji';
                 emoji.textContent = getEmoji(student.points);
@@ -332,17 +343,18 @@
             displayData(studentsData, selectedGroup);
         }
 
-
+        // Обработчик изменения фильтра по группам
         document.getElementById('groupFilter').addEventListener('change', (event) => {
             const selectedGroup = event.target.value;
             displayData(studentsData, selectedGroup);
         });
 
-
+        // Плавный скроллинг к таблице
         function scrollToTable() {
-            document.querySelector('.filters').scrollIntoView({ behavior: 'smooth' });
+            document.querySelector('.content').scrollIntoView({ behavior: 'smooth' });
         }
 
+        // Загружаем данные при загрузке страницы
         fetchData();
     </script>
 </body>
