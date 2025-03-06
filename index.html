@@ -16,7 +16,7 @@
             scroll-behavior: smooth;
         }
 
-        /* Обложка */
+        /* Обложка на весь экран */
         .cover {
             background-image: url('https://img3.akspic.ru/crops/5/4/7/2/5/152745/152745-dizajn-graficeskij_dizajn-sinij-krasochnost-purpur-3840x2160.jpg');
             background-size: cover;
@@ -52,6 +52,12 @@
         .cover button:hover {
             background-color: #7a00b3;
             transform: scale(1.05);
+        }
+
+        /* Основной контент */
+        .content {
+            background-color: #1a1a1a;
+            padding: 20px;
         }
 
         /* Фильтры */
@@ -112,10 +118,10 @@
 
         .emoji {
             position: absolute;
-            right: -35px; 
+            right: -25px;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 24px; 
+            font-size: 24px;
             z-index: 2;
         }
 
@@ -168,45 +174,45 @@
         <button onclick="scrollToTable()">УЗНАЙ СВОЙ БАЛЛ</button>
     </div>
 
-    <!-- Фильтры по времени -->
-    <div class="time-filters">
-        <button onclick="filterByPeriod('day')">День</button>
-        <button onclick="filterByPeriod('week')">Неделя</button>
-        <button onclick="filterByPeriod('month')">Месяц</button>
-    </div>
+    <!-- Основной контент -->
+    <div class="content">
+        <!-- Фильтры по времени -->
+        <div class="time-filters">
+            <button onclick="filterByPeriod('day')">День</button>
+            <button onclick="filterByPeriod('week')">Неделя</button>
+            <button onclick="filterByPeriod('month')">Месяц</button>
+        </div>
 
-    <!-- Фильтры -->
-    <div class="filters">
-        <select id="groupFilter">
-            <option value="all">ВСЕ ГРУППЫ</option>
-        </select>
-        <button onclick="sortByPoints()">СОРТИРОВАТЬ ПО БАЛЛАМ</button>
-    </div>
+        <!-- Фильтры -->
+        <div class="filters">
+            <select id="groupFilter">
+                <option value="all">ВСЕ ГРУППЫ</option>
+            </select>
+            <button onclick="sortByPoints()">СОРТИРОВАТЬ ПО БАЛЛАМ</button>
+        </div>
 
-    <!-- Шкала баллов -->
-    <div class="points-scale">
-        <span>0</span>
-        <span>200</span>
-        <span>400</span>
-        <span>600</span>
-        <span>800</span>
-        <span>1000</span>
-    </div>
+        <!-- Шкала баллов -->
+        <div class="points-scale">
+            <span>0</span>
+            <span>1000</span>
+        </div>
 
-    <!-- Контейнер для учеников -->
-    <div id="students"></div>
+        <!-- Контейнер для учеников -->
+        <div id="students"></div>
+    </div>
 
     <script>
         let studentsData = [];
 
         async function fetchData() {
-            const response = await fetch('https://script.google.com/macros/s/AKfycbzKpFEFR47aTJEZTW0vbelAEm_p60Iu6AHN7GGGmuieI0naoBIdJuQfkSAjme6NZZjM/exec');
+            const response = await fetch('https://script.google.com/macros/s/AKfycbyC-grHc8I0vpq8lAPUbaFS3Ne4cawIQLF8yy9BK55IP2AOXqM_uGGTFAv6L3kt-21i/exec');
             const data = await response.json();
             studentsData = data;
             populateGroupFilter(data);
-            displayData(data, 'all'); // По умолчанию показываем все группы
+            filterByPeriod('month'); // По умолчанию показываем данные за месяц
         }
 
+        // Заполняем фильтр группами
         function populateGroupFilter(data) {
             const groupFilter = document.getElementById('groupFilter');
             const groups = [...new Set(data.map(student => student.group))];
@@ -218,16 +224,60 @@
             });
         }
 
+        // Получаем эмодзи в зависимости от баллов
         function getEmoji(points) {
-            if (points >= 0 && points < 200) return '👍'; 
-            if (points >= 200 && points < 400) return '😊'; 
-            if (points >= 400 && points < 600) return '⭐'; 
-            if (points >= 600 && points < 800) return '🚀'; 
-            if (points >= 800 && points <= 1000) return '🔥'; 
+            if (points >= 0 && points < 200) return '👍'; // Лайк
+            if (points >= 200 && points < 400) return '😊'; // Улыбка
+            if (points >= 400 && points < 600) return '⭐'; // Звездочка
+            if (points >= 600 && points < 800) return '🚀'; // Ракета
+            if (points >= 800 && points <= 1000) return '🔥'; // Огонь
             return '';
         }
 
+        // Агрегируем данные по ученикам за выбранный период
+        function aggregateData(data, period) {
+            const today = new Date();
+            const aggregatedData = {};
 
+            data.forEach(entry => {
+                const entryDate = new Date(entry.date);
+                let includeEntry = false;
+
+                switch (period) {
+                    case 'day':
+                        includeEntry = entryDate.toDateString() === today.toDateString();
+                        break;
+                    case 'week':
+                        const startOfWeek = new Date(today);
+                        startOfWeek.setDate(today.getDate() - today.getDay());
+                        includeEntry = entryDate >= startOfWeek && entryDate <= today;
+                        break;
+                    case 'month':
+                        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                        includeEntry = entryDate >= startOfMonth && entryDate <= today;
+                        break;
+                    default:
+                        includeEntry = true;
+                }
+
+                if (includeEntry) {
+                    const key = entry.id; // Используем ID ученика
+                    if (!aggregatedData[key]) {
+                        aggregatedData[key] = {
+                            id: entry.id,
+                            name: entry.name,
+                            group: entry.group,
+                            points: 0
+                        };
+                    }
+                    aggregatedData[key].points += entry.points;
+                }
+            });
+
+            return Object.values(aggregatedData);
+        }
+
+        // Отображаем данные
         function displayData(data, group) {
             const container = document.getElementById('students');
             container.innerHTML = '';
@@ -241,10 +291,10 @@
                 filteredData = data.filter(student => student.group == group);
             }
 
-
+            // Сортируем данные по баллам
             filteredData.sort((a, b) => b.points - a.points);
 
-
+            // Отображаем учеников
             filteredData.forEach(student => {
                 const barContainer = document.createElement('div');
                 barContainer.className = 'bar-container';
@@ -254,7 +304,7 @@
                 bar.style.width = `${Math.min((student.points / 1000) * 100, 100)}%`;
                 bar.textContent = `${student.points} БАЛЛОВ`;
 
-      
+                // Добавляем эмодзи
                 const emoji = document.createElement('span');
                 emoji.className = 'emoji';
                 emoji.textContent = getEmoji(student.points);
@@ -272,56 +322,29 @@
 
         // Фильтрация по периоду (день, неделя, месяц)
         function filterByPeriod(period) {
-            const today = new Date();
-            let filteredData;
-
-            switch (period) {
-                case 'day':
-                    filteredData = studentsData.filter(student => {
-                        const studentDate = new Date(student.date);
-                        return studentDate.toDateString() === today.toDateString();
-                    });
-                    break;
-                case 'week':
-                    const startOfWeek = new Date(today);
-                    startOfWeek.setDate(today.getDate() - today.getDay());
-                    filteredData = studentsData.filter(student => {
-                        const studentDate = new Date(student.date);
-                        return studentDate >= startOfWeek && studentDate <= today;
-                    });
-                    break;
-                case 'month':
-                    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-                    filteredData = studentsData.filter(student => {
-                        const studentDate = new Date(student.date);
-                        return studentDate >= startOfMonth && studentDate <= today;
-                    });
-                    break;
-                default:
-                    filteredData = studentsData;
-            }
-
+            const aggregatedData = aggregateData(studentsData, period);
             const selectedGroup = document.getElementById('groupFilter').value;
-            displayData(filteredData, selectedGroup);
+            displayData(aggregatedData, selectedGroup);
         }
 
         // Сортировка по баллам
         function sortByPoints() {
             const selectedGroup = document.getElementById('groupFilter').value;
-            displayData(studentsData, selectedGroup);
+            filterByPeriod('month'); // Пересчитываем данные за месяц
         }
 
-
+        // Обработчик изменения фильтра по группам
         document.getElementById('groupFilter').addEventListener('change', (event) => {
             const selectedGroup = event.target.value;
-            displayData(studentsData, selectedGroup);
+            filterByPeriod('month'); // Пересчитываем данные за месяц
         });
 
-
+        // Плавный скроллинг к таблице
         function scrollToTable() {
-            document.querySelector('.filters').scrollIntoView({ behavior: 'smooth' });
+            document.querySelector('.content').scrollIntoView({ behavior: 'smooth' });
         }
 
+        // Загружаем данные при загрузке страницы
         fetchData();
     </script>
 </body>
